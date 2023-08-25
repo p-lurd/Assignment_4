@@ -1,0 +1,14 @@
+[
+  {
+    "username": "plurd1@altschool.com",
+    "password": "chess",
+    "api_key": "plurd1@altschool.com_chess",
+    "level": "ordinaryUser admin"
+  },
+  {
+    "username": "plurd1@gmail.com",
+    "password": "chess",
+    "api_key": "plurd1@gmail.com_chess",
+    "level": "ordinaryUser"
+  }
+]
