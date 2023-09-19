@@ -40,18 +40,18 @@ app.get('/v1/items', getItems)
 app.get('/v1/items/:id', getOneItem)
 
 // -----------------To update an item---------------
-app.patch('/v1/items/:id',globalMiddlewares.checkAdmin, (req, res)=>{
-   updateItem(req, res);
-})
+app.patch('/v1/items/:id',globalMiddlewares.checkAdmin, updateItem);
 
 
 // ---------------- To delete an item----------------
-app.delete('/v1/items/:id',globalMiddlewares.checkAdmin, (req, res)=>{
-    deleteItem(req, res);
+app.delete('/v1/items/:id',globalMiddlewares.checkAdmin,deleteItem);
+
+
+app.use((error, req, res, next) => {
+  if (error.status == 404) return res.status(404).sendFile(notFound);
+  res.status(error.status ?? 500)
+  res.send(error.message)
 })
-
-
-
 
 
 app.listen(3001, () => {

@@ -5,30 +5,36 @@ const utilities = require("../utilities");
 const user = [];
 
 // -----------To create user and admin--------------------
-function createUser(req, res) {
-  const bodyOfRequest = req.body;
-  const username = bodyOfRequest.username;
+function createUser(req, res, next) {
 
-  const usernameDomain = username.split("@")[1];
+  try {
+    const bodyOfRequest = req.body;
+    const username = bodyOfRequest.username;
 
-  const users = fs.readFileSync(utilities.usersDetailsPath);
-  const parsedUsers = JSON.parse(users);
-  bodyOfRequest.api_key = `${bodyOfRequest.username}_${bodyOfRequest.password}`
+    if (!bodyOfRequest.username || !bodyOfRequest.password) {
+      const badRequestError = new Error("username & password are required, kindly fill correctly");
+      badRequestError.status = 400;
+      throw badRequestError;
+    }
 
+    const usernameDomain = username.split("@")[1];
 
-  
-  if (!bodyOfRequest.username || !bodyOfRequest.password) {
-    res.send("username or password is required, kindly fill correctly");
-    res.status(400);
-    return;
-  } else if (usernameDomain === "altschool.com") {
-    const existedUsername = parsedUsers.find(
-      (parsedUsers) => parsedUsers.username === username
-    );
-    
-    if (!existedUsername) {
-      
-      user.push({ ...bodyOfRequest, level: "ordinaryUser admin"});
+    const users = fs.readFileSync(utilities.usersDetailsPath);
+    const parsedUsers = JSON.parse(users);
+    bodyOfRequest.api_key = `${bodyOfRequest.username}_${bodyOfRequest.password}`
+
+    if (usernameDomain === "altschool.com") {
+      const existedUsername = parsedUsers.find(
+        (parsedUsers) => parsedUsers.username === username
+      );
+
+      if (existedUsername) {
+        const duplicateUserError = Error("User already exists");
+        duplicateUserError.status = 409;
+        throw duplicateUserError;
+      }
+
+      user.push({ ...bodyOfRequest, level: "ordinaryUser admin" });
 
       fs.writeFileSync(
         utilities.usersDetailsPath,
@@ -42,29 +48,30 @@ function createUser(req, res) {
           }
         }
       );
+      res.status(201);
       res.send("admin created successfully");
-      res.status(200);
+
     } else {
-      res.send("user already exists");
-      res.status(409);
-    }
-  } else {
-    user.push({ ...bodyOfRequest, level: "ordinaryUser" });
-    fs.writeFileSync(
-      utilities.usersDetailsPath,
-      JSON.stringify(user, null, 2),
-      function (err) {
-        if (err) {
-          console.log(err);
-          return;
-        } else {
-          console.log("admin created successfully");
+      user.push({ ...bodyOfRequest, level: "ordinaryUser" });
+      fs.writeFileSync(
+        utilities.usersDetailsPath,
+        JSON.stringify(user, null, 2),
+        function (err) {
+          if (err) {
+            console.log(err);
+            return;
+          } else {
+            console.log("admin created successfully");
+          }
         }
-      }
-    );
-    res.send("user created successfully");
-    res.status(200);
+      );
+      res.status(201);
+      res.send("user created successfully");
+    }
+  } catch (error) {
+    next(error)
   }
+
 }
 
 // function login(req, res) {
@@ -78,3 +85,4 @@ function createUser(req, res) {
 module.exports = {
   createUser
 };
+
