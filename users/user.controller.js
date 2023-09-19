@@ -29,7 +29,7 @@ function createUser(req, res, next) {
       );
 
       if (existedUsername) {
-        const duplicateUserError = Error("User already exists");
+        const duplicateUserError = new Error("User already exists");
         duplicateUserError.status = 409;
         throw duplicateUserError;
       }
